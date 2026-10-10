@@ -24,6 +24,7 @@ CREATE TABLE pelanggan (
     password VARCHAR(255) NULL,
     no_hp VARCHAR(20) NULL UNIQUE,
     alamat VARCHAR(255) NULL,
+    foto_profil VARCHAR(255) NULL,
     poin_bonus INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -129,6 +130,18 @@ CREATE TABLE rating_laundry (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_rating_pelanggan FOREIGN KEY (id_pelanggan) REFERENCES pelanggan(id_pelanggan) ON DELETE SET NULL,
     CONSTRAINT fk_rating_transaksi FOREIGN KEY (id_transaksi) REFERENCES transaksi(id_transaksi) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 9. TABEL VOUCHERS (PROMO & DISKON)
+CREATE TABLE IF NOT EXISTS vouchers (
+    id_voucher INT AUTO_INCREMENT PRIMARY KEY,
+    kode_voucher VARCHAR(50) NOT NULL UNIQUE,
+    tipe_diskon ENUM('Nominal', 'Persen') NOT NULL DEFAULT 'Nominal',
+    nilai_diskon DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    min_transaksi DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    kuota INT NOT NULL DEFAULT 100,
+    status ENUM('Aktif', 'Nonaktif') NOT NULL DEFAULT 'Aktif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- DATA SEEDER DEFAULT (AKUN SYSTEM & JENIS LAYANAN)

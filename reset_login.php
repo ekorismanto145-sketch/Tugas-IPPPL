@@ -10,15 +10,15 @@ session_start();
 $password_plain = 'admin123';
 $hash_baru      = password_hash($password_plain, PASSWORD_DEFAULT);
 
-// 3. Update atau Insert user admin
+// 3. Update atau Insert user admin ke tabel users
 $username = 'admin';
-$cek = mysqli_query($koneksi, "SELECT * FROM pemilik WHERE username='$username'");
+$cek = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$username'");
 
-if (mysqli_num_rows($cek) > 0) {
-    mysqli_query($koneksi, "UPDATE pemilik SET password='$hash_baru', role='Pemilik' WHERE username='$username'");
+if ($cek && mysqli_num_rows($cek) > 0) {
+    mysqli_query($koneksi, "UPDATE users SET password='$hash_baru', role='Admin', status='Aktif' WHERE username='$username'");
     $msg = "Password admin berhasil di-reset!";
 } else {
-    mysqli_query($koneksi, "INSERT INTO pemilik (username, password, nama, role) VALUES ('$username', '$hash_baru', 'Pemilik RAVF', 'Pemilik')");
+    mysqli_query($koneksi, "INSERT INTO users (username, password, nama, role, status) VALUES ('$username', '$hash_baru', 'Administrator Utama', 'Admin', 'Aktif')");
     $msg = "Akun admin baru berhasil dibuat!";
 }
 ?>

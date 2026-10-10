@@ -2,6 +2,18 @@
 require_once 'app_layout.php';
 require_admin();
 
+// Auto-create tabel vouchers jika belum ada
+@mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS vouchers (
+    id_voucher INT AUTO_INCREMENT PRIMARY KEY,
+    kode_voucher VARCHAR(50) NOT NULL UNIQUE,
+    tipe_diskon ENUM('Nominal', 'Persen') NOT NULL DEFAULT 'Nominal',
+    nilai_diskon DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    min_transaksi DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    kuota INT NOT NULL DEFAULT 100,
+    status ENUM('Aktif', 'Nonaktif') NOT NULL DEFAULT 'Aktif',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
 $success = '';
 $error = '';
 

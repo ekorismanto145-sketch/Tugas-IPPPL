@@ -20,23 +20,16 @@ function app_start(string $title, string $active = ''): void
     $user_id = (int) ($_SESSION['user_id'] ?? 0);
 
     if (is_user()) {
-        // Foto profil dari tabel pelanggan jika ada
-        $stmt = mysqli_prepare($koneksi, "SELECT nama FROM pelanggan WHERE id_pelanggan = ? LIMIT 1");
-        if ($stmt) {
-            mysqli_stmt_bind_param($stmt, 'i', $user_id);
-            mysqli_stmt_execute($stmt);
-            $res = mysqli_stmt_get_result($stmt);
+        // Safe check foto profil dari tabel pelanggan
+        $res = @mysqli_query($koneksi, "SELECT foto_profil FROM pelanggan WHERE id_pelanggan = {$user_id} LIMIT 1");
+        if ($res && $data = mysqli_fetch_assoc($res)) {
+            $profile_photo = $data['foto_profil'] ?? '';
         }
     } else {
-        // Foto profil dari tabel users
-        $stmt = mysqli_prepare($koneksi, "SELECT foto_profil FROM users WHERE id_user = ? LIMIT 1");
-        if ($stmt) {
-            mysqli_stmt_bind_param($stmt, 'i', $user_id);
-            mysqli_stmt_execute($stmt);
-            $res = mysqli_stmt_get_result($stmt);
-            if ($res && $data = mysqli_fetch_assoc($res)) {
-                $profile_photo = $data['foto_profil'] ?? '';
-            }
+        // Safe check foto profil dari tabel users
+        $res = @mysqli_query($koneksi, "SELECT foto_profil FROM users WHERE id_user = {$user_id} LIMIT 1");
+        if ($res && $data = mysqli_fetch_assoc($res)) {
+            $profile_photo = $data['foto_profil'] ?? '';
         }
     }
     
@@ -53,27 +46,33 @@ function app_start(string $title, string $active = ''): void
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        [data-theme="dark"] body{background:#0f172a;color:#e2e8f0}
-        [data-theme="dark"] .surface{background:#1e293b;color:#e2e8f0;border-color:#334155}
-        [data-theme="dark"] .muted{color:#94a3b8}
-        [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:#0f172a!important;color:#e2e8f0!important;border-color:#475569!important}
-        [data-theme="dark"] input::placeholder,[data-theme="dark"] textarea::placeholder{color:#94a3b8}
-        [data-theme="dark"] .bg-white{background:#1e293b!important;color:#e2e8f0}
-        [data-theme="dark"] .bg-slate-50{background:#243247!important}
-        [data-theme="dark"] .bg-slate-100{background:#0f172a!important}
-        [data-theme="dark"] .bg-emerald-100{background:#064e3b!important;color:#a7f3d0!important}
-        [data-theme="dark"] .bg-emerald-50{background:#123b32!important}
-        [data-theme="dark"] .bg-amber-50{background:#422006!important}
-        [data-theme="dark"] .bg-cyan-50{background:#083344!important}
-        [data-theme="dark"] .bg-red-50{background:#450a0a!important;color:#fecaca!important}
-        [data-theme="dark"] .bg-indigo-100{background:#312e81!important;color:#c7d2fe!important}
-        [data-theme="dark"] .text-slate-900,[data-theme="dark"] .text-slate-800,[data-theme="dark"] .text-slate-700{color:#e2e8f0!important}
-        [data-theme="dark"] .text-slate-600,[data-theme="dark"] .text-slate-500{color:#cbd5e1!important}
-        [data-theme="dark"] .border-slate-100,[data-theme="dark"] .border-slate-200{border-color:#334155!important}
-        .sidebar{transform:translateX(-105%);transition:transform .25s ease}
-        .sidebar.open{transform:translateX(0)}
-        .sidebar-overlay{opacity:0;pointer-events:none;transition:opacity .25s ease}
-        .sidebar-overlay.open{opacity:1;pointer-events:auto}
+        [data-theme="dark"] body { background: #0f172a; color: #f1f5f9; }
+        [data-theme="dark"] .surface { background: #1e293b; color: #f1f5f9; border-color: #334155; }
+        [data-theme="dark"] .muted { color: #94a3b8; }
+        [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { background: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
+        [data-theme="dark"] input::placeholder, [data-theme="dark"] textarea::placeholder { color: #64748b; }
+        [data-theme="dark"] .bg-white { background: #1e293b !important; color: #f1f5f9; }
+        [data-theme="dark"] .bg-slate-50 { background: #1e293b !important; border-color: #334155 !important; }
+        [data-theme="dark"] .bg-slate-100 { background: #0f172a !important; }
+        [data-theme="dark"] .bg-slate-200 { background: #334155 !important; color: #f1f5f9 !important; }
+        [data-theme="dark"] .bg-emerald-100 { background: #064e3b !important; color: #a7f3d0 !important; }
+        [data-theme="dark"] .bg-emerald-50 { background: #064e3b !important; color: #a7f3d0 !important; }
+        [data-theme="dark"] .bg-amber-50 { background: #451a03 !important; color: #fde68a !important; }
+        [data-theme="dark"] .bg-cyan-50 { background: #083344 !important; color: #cffaff !important; }
+        [data-theme="dark"] .bg-red-50 { background: #450a0a !important; color: #fecaca !important; }
+        [data-theme="dark"] .bg-indigo-100 { background: #312e81 !important; color: #c7d2fe !important; }
+        [data-theme="dark"] .text-slate-900, [data-theme="dark"] .text-slate-800, [data-theme="dark"] .text-slate-700 { color: #f1f5f9 !important; }
+        [data-theme="dark"] .text-slate-600, [data-theme="dark"] .text-slate-500 { color: #cbd5e1 !important; }
+        [data-theme="dark"] .text-cyan-700, [data-theme="dark"] .text-cyan-800 { color: #38bdf8 !important; }
+        [data-theme="dark"] .text-indigo-700, [data-theme="dark"] .text-indigo-800 { color: #a5b4fc !important; }
+        [data-theme="dark"] .border-slate-100, [data-theme="dark"] .border-slate-200, [data-theme="dark"] .border-slate-300 { border-color: #334155 !important; }
+        [data-theme="dark"] th { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+        [data-theme="dark"] td { border-color: #334155 !important; }
+        [data-theme="dark"] .leaflet-popup-content-wrapper, [data-theme="dark"] .leaflet-popup-tip { background: #1e293b !important; color: #f1f5f9 !important; }
+        .sidebar { transform: translateX(-105%); transition: transform .25s ease; }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+        .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-100 transition-colors">
